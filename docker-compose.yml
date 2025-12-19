@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:17
+    container_name: jsonplaceholder_db
+    env_file:
+      - app/.env
+    environment:
+      POSTGRES_USER: app #${POSTGRES_USER}
+      POSTGRES_PASSWORD: password #${POSTGRES_PASSWORD}
+      POSTGRES_DB: blog #${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d blog -U app"] #"${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: jsonplaceholder_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: app #${POSTGRES_USER}
+      POSTGRES_PASSWORD: password #${POSTGRES_PASSWORD}
+      POSTGRES_DB: blog #${POSTGRES_DB}
+      DATABASE_URL: postgresql+asyncpg://app:password@db:5432/blog
+      #DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    ports:
+      - "8000:8000"
+    command:
+      - gunicorn
+      - --workers=4
+      - --worker-class=uvicorn.workers.UvicornWorker
+      - --bind=0.0.0.0:8000
+      - app.main:app
+    volumes:
+      - app_data:/app
+##      - ./templates:/app/templates
+##      - ./static:/app/static
+
+volumes:
+    app_data:
+    pg_data:
+      driver: local

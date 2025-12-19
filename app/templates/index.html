@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSONPlaceholder Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .user-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        .posts-grid { margin-top: 20px; }
+        .post-card { background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JSONPlaceholder Data Loader</h1>
+
+        <button class="button" onclick="loadData()">Load Data from API</button>
+
+        <div id="users-section">
+            <h2>Users</h2>
+            <div id="users-grid" class="users-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const response = await fetch('/api/load-data/', {
+                method: 'POST'
+            });
+            const result = await response.json();
+            alert(`Loaded: ${result.users_loaded} users, ${result.posts_loaded} posts`);
+            loadUsers();
+        }
+
+        async function loadUsers() {
+            const response = await fetch('/api/users/');
+            const users = await response.json();
+
+            const usersGrid = document.getElementById('users-grid');
+            usersGrid.innerHTML = '';
+
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                userCard.innerHTML = `
+                    <h3>${user.name}</h3>
+                    <p><strong>Username:</strong> ${user.username}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <div class="posts-grid">
+                        ${user.posts.map(post => `
+                            <div class="post-card">
+                                <h4>${post.title}</h4>
+                                <p>${post.body.substring(0, 100)}...</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                usersGrid.appendChild(userCard);
+            });
+        }
+
+        // Загружаем пользователей при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>
