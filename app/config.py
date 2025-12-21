@@ -1,12 +1,12 @@
-from pathlib import Path
 
+from pathlib import Path
 from pydantic import BaseModel, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 from sqlalchemy import URL
 
 
 BASE_DIR = Path(__file__).resolve().parent
+
 
 class DbConfig(BaseModel):
     driver_sync: str = "postgresql+psycopg"
@@ -57,4 +57,3 @@ class Settings(BaseSettings):
 # noinspection PyArgumentList
 settings = Settings()
 
-print(settings)

@@ -5,8 +5,13 @@ WORKDIR /
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Cache buster to force rebuild of app layer
+RUN echo "Build at $(date)"
+
 COPY app /app
 
+# Set PYTHONPATH so app module can be found
+ENV PYTHONPATH=/
 
 
 #ENV PATH="/app/.venv/bin:$PATH"

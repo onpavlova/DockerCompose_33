@@ -1,14 +1,15 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy import text
 from typing import List
 
-from sqlalchemy.orm import selectinload
 
-import schemas, models
-from database import get_session
-from jsonplaceholder_requests import fetch_all_data
+from app import schemas, models
+from app.database import get_session
+from app.jsonplaceholder_requests import fetch_all_data
 
 router = APIRouter(prefix="/api", tags=["users & posts"])
 

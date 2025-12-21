@@ -3,14 +3,12 @@ from sqlalchemy.orm import declarative_base
 import os
 from typing import AsyncGenerator
 
-#from config import settings
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+asyncpg://app:password@localhost:5432/blog"
 )
 
-print(DATABASE_URL)
 
 # Создаем асинхронный движок
 engine = create_async_engine(
@@ -47,4 +45,5 @@ async def init_db():
     Инициализация БД - создание таблиц
     """
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)

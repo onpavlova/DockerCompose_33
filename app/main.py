@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 import uvicorn
 from fastapi.staticfiles import StaticFiles
@@ -6,20 +7,36 @@ from fastapi.requests import Request
 from fastapi.responses import HTMLResponse
 from contextlib import asynccontextmanager
 
-from database  import init_db, engine
-from routers import users_posts
+from app.database  import init_db, engine
+from app.routers import users_posts
 
-#from config import settings
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan():
+    """
+       Контекстный менеджер для управления жизненным циклом приложения
+       """
     # Инициализация при запуске
-    await init_db()
-    print("Database initialized")
+    try:
+        print("Initializing database...")
+        await init_db()
+        print("✅ Database initialized successfully")
+    except Exception as e:
+        print(f"❌ Database initialization failed: {e}")
+        # Если есть проблема с созданием таблиц, продолжаем без них
+        # или пересоздаем
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
+                await conn.run_sync(Base.metadata.create_all)
+            print("✅ Database recreated successfully")
+        except Exception as e2:
+            print(f"❌ Failed to recreate database: {e2}")
     yield
     # Завершение при остановке
+    print("Closing database connections...")
     await engine.dispose()
-    print("Database connection closed")
+    print("✅ Database connections closed")
 
 
 app = FastAPI(

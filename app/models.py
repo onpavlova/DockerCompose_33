@@ -1,7 +1,8 @@
+
 from sqlalchemy import String, Integer, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from database import Base
+from app.database import Base
 from typing import List
 
 
@@ -17,7 +18,8 @@ class User(AsyncAttrs, Base):
     posts: Mapped[List["Post"]] = relationship(
         "Post",
         back_populates="user",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        order_by="Post.created_at.desc()",
     )
 
 
@@ -34,4 +36,4 @@ class Post(AsyncAttrs, Base):
     body: Mapped[str] = mapped_column(Text, nullable=False)
 
     # Связь с пользователем
-    user: Mapped["User"] = relationship("User", back_populates="posts")
+    user: Mapped["User"] = relationship("User", back_populates="posts", lazy="joined")
